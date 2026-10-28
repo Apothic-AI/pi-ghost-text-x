@@ -1,6 +1,6 @@
 {
-  "name": "pi-ghost-text-x",
-  "version": "0.1.2",
+  "name": "@apothic-ai/pi-ghost-text-x",
+  "version": "0.2.0",
   "description": "Ghost-text prompt suggestions (inline autocomplete + next-prompt) for the pi coding agent",
   "license": "MIT",
   "author": "Chris Vaughan",
@@ -30,6 +30,10 @@
   "files": [
     "src"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "pi": {
     "extensions": [
       "./src/index.ts"
@@ -42,7 +46,9 @@
     "@earendil-works/pi-tui": "*"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run test && npm run typecheck"
   },
   "devDependencies": {
     "@earendil-works/pi-agent-core": "^1.4.0",

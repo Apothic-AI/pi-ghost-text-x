@@ -14,13 +14,13 @@ As you type (or after the agent finishes and the input is empty), a dimmed predi
 ## Install
 
 ```bash
-pi install npm:pi-ghost-text-x
+pi install npm:@apothic-ai/pi-ghost-text-x
 ```
 
 Remove it:
 
 ```bash
-pi remove npm:pi-ghost-text-x
+pi remove npm:@apothic-ai/pi-ghost-text-x
 ```
 
 ## Using it
