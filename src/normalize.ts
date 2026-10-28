@@ -6,7 +6,14 @@
  * @module
  */
 
-export const MAX_SUGGESTION_GRAPHEMES = 300;
+/**
+ * Ceiling on a usable suggestion.
+ *
+ * Serves as a runaway guard, not a style limit: a prompt the user expands into a
+ * short paragraph is legitimate, so this is generous enough for ~350 words while
+ * still rejecting a model that rambles.
+ */
+export const MAX_SUGGESTION_GRAPHEMES = 2000;
 export const MIN_CHARS = 4;
 
 const NO_SUGGESTION = /^NONE$/i;
