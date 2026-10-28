@@ -1,6 +1,6 @@
 {
   "name": "@apothic-ai/pi-ghost-text-x",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Ghost-text prompt suggestions (inline autocomplete + next-prompt) for the pi coding agent",
   "license": "MIT",
   "author": "Chris Vaughan",
