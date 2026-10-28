@@ -13,7 +13,15 @@ import { fitSuggestionToWidth } from "./normalize.ts";
  */
 const DECOR = String.raw`(?:\x1b\[[0-9;:]*m|\x1b_[^\x07]*\x07)`;
 const DECOR_RUN = new RegExp(`^${DECOR}*`);
-const PADDING = new RegExp(`^(${DECOR}*)( *)(${DECOR}*)$`);
+/**
+ * Trailing run of blank cells, with whatever chrome the frame drew after it.
+ *
+ * The suffix matters: pi-pretty-tui monkey-patches `CustomEditor.prototype.render`
+ * to re-render at `width - 2` and wrap every line in `│ ... │`. Requiring the rest
+ * of the row to be spaces alone made the check fail on that right-hand border, so
+ * the ghost was silently dropped with a styled editor frame in use.
+ */
+const PADDING = new RegExp(`^(${DECOR}*)( *)(${DECOR}*)(.*)$`);
 const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 /** True when the cursor sits after the last character of the last logical line. */
@@ -48,17 +56,27 @@ export function renderGhostText(
 	pos += glyph.length;
 	pos += DECOR_RUN.exec(line.slice(pos))![0].length;
 
-	// Only overwrite plain trailing padding; anything else after the cursor
-	// (a border, styled content) means the layout isn't what we expect.
+	// Only overwrite plain trailing padding. A suffix after it is chrome from a
+	// framing extension and is preserved verbatim, with its width reserved so the
+	// ghost can never overdraw the frame.
 	const pad = PADDING.exec(line.slice(pos));
 	if (!pad) return lines;
-	const [, lead, spaces, trail] = pad;
+	const [, lead, spaces, trail, suffix] = pad;
+	if (suffix!.includes(CURSOR_MARKER)) return lines; // not the layout we think it is
 
-	const room = Math.min(spaces!.length, width - visibleWidth(line.slice(0, pos))) - 1;
+	const reserved = visibleWidth(suffix!);
+	const room =
+		Math.min(spaces!.length, width - visibleWidth(line.slice(0, pos)) - reserved) - 1;
 	if (room < 6) return lines;
 
 	const shown = fitSuggestionToWidth(ghost.replace(/\s+/g, " "), room, visibleWidth);
 	const shownWidth = visibleWidth(shown);
-	lines[idx] = line.slice(0, pos) + dim(shown) + lead + " ".repeat(spaces!.length - shownWidth) + trail;
+	lines[idx] =
+		line.slice(0, pos) +
+		dim(shown) +
+		lead +
+		" ".repeat(spaces!.length - shownWidth) +
+		trail +
+		suffix!;
 	return lines;
 }

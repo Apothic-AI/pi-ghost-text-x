@@ -137,7 +137,29 @@ test("ghost text keeps styling around the trailing padding", () => {
 	assert.equal(visibleWidth(rendered), visibleWidth(line));
 });
 
-test("ghost text leaves the row alone when content follows the cursor", () => {
+test("ghost text draws inside a framed editor and preserves its border", () => {
+	// pi-pretty-tui wraps every editor row in border columns, so the row after
+	// the cursor is padding followed by a `│`. Requiring spaces alone dropped the
+	// ghost entirely whenever that frame was active.
 	const line = row("\x1b[0m", " ".repeat(19) + "│");
+	const width = visibleWidth(line);
+	const [rendered] = renderGhostText([line], width, " prediction", true, dim);
+	assert(rendered.includes(dim(" prediction")));
+	assert(rendered.endsWith("│"), "frame border survives");
+	assert.equal(visibleWidth(rendered), width);
+});
+
+test("ghost text respects a styled frame border from pi-pretty-tui", () => {
+	const border = (text) => `\x1b[36m${text}\x1b[0m`;
+	const line = `│abcd${CURSOR_MARKER}\x1b[7m \x1b[0m${" ".repeat(33)}${border("│")}`;
+	const width = visibleWidth(line);
+	const [rendered] = renderGhostText([line], width, " prediction", true, dim);
+	assert(rendered.includes(dim(" prediction")));
+	assert(rendered.endsWith(border("│")));
+	assert.equal(visibleWidth(rendered), width);
+});
+
+test("ghost text leaves the row alone when content sits directly after the cursor", () => {
+	const line = row("\x1b[0m", "x" + " ".repeat(18));
 	assert.deepEqual(renderGhostText([line], visibleWidth(line), " prediction", true, dim), [line]);
 });
