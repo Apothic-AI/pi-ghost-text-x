@@ -1,8 +1,10 @@
-# pi-ghost-text
+# pi-ghost-text-x
 
 Ghost-text prompt suggestions for the [pi coding agent](https://github.com/earendil-works/pi) — like Claude Code's inline autocomplete for the prompt box.
 
 As you type (or after the agent finishes and the input is empty), a dimmed prediction of the likely next prompt appears after the cursor. Accept it, cycle alternatives, or keep typing.
+
+> **Fork notice.** This is `pi-ghost-text-x`, a fork of [jcv/pi-ghost-text](https://github.com/jcv/pi-ghost-text) maintained by [Apothic AI](https://github.com/Apothic-AI). It adds configurable request sampling — `reasoning`, `maxTokens`, and `temperature` — settable in `prompt-suggestions.json` or via `/suggest-sampling`. Everything else is upstream behavior.
 
 ## Requirements
 
@@ -12,13 +14,13 @@ As you type (or after the agent finishes and the input is empty), a dimmed predi
 ## Install
 
 ```bash
-pi install npm:pi-ghost-text
+pi install npm:pi-ghost-text-x
 ```
 
 Remove it:
 
 ```bash
-pi remove npm:pi-ghost-text
+pi remove npm:pi-ghost-text-x
 ```
 
 ## Using it
@@ -42,6 +44,7 @@ When `candidates` is `1` (the default), `Tab` simply accepts. Set `candidates` t
 | `/suggest` | Choose mode: `both`, `while-typing`, `after-turn`, or `off` |
 | `/suggest-model` | Pick the suggestion model (or `auto` to prefer a fast, cheap one) |
 | `/suggest-context` | Set the context window (messages × chars per message) |
+| `/suggest-sampling` | Set reasoning effort, max tokens, and temperature |
 
 ## Configuration
 
@@ -59,7 +62,10 @@ Stored as JSON, resolved `defaults ← global ← project`:
   "contextMessages": 8,
   "contextChars": 600,
   "maxPerTurn": 0,
-  "debug": false
+  "debug": false,
+  "reasoning": "off",
+  "maxTokens": 150,
+  "temperature": 0.3
 }
 ```
 
@@ -73,8 +79,11 @@ Stored as JSON, resolved `defaults ← global ← project`:
 | `contextChars` | `600` | Chars kept per message |
 | `maxPerTurn` | `0` | Max suggestions shown per agent turn (`0` = unlimited) |
 | `debug` | `false` | Append diagnostic lines to `~/.pi/agent/prompt-suggestions.log` |
+| `reasoning` | `"off"` | Reasoning/thinking effort: `"off"`, `"minimal"`, `"low"`, `"medium"`, `"high"`, `"xhigh"`, or `"max"` |
+| `maxTokens` | `150` | Max tokens per suggestion (1–32768); multiplied by the candidate count when `candidates > 1` |
+| `temperature` | `0.3` | Sampling temperature (0–2) |
 
-`mode`, `model`, `contextMessages`, and `contextChars` are settable from the commands above; `candidates`, `streaming`, `maxPerTurn`, and `debug` are JSON-only. Commands write to the **global** scope, so a project override in `.pi/prompt-suggestions.json` takes precedence over a command-set value.
+`mode`, `model`, `contextMessages`, `contextChars`, `reasoning`, `maxTokens`, and `temperature` are settable from the commands above; `candidates`, `streaming`, `maxPerTurn`, and `debug` are JSON-only. Commands write to the **global** scope, so a project override in `.pi/prompt-suggestions.json` takes precedence over a command-set value.
 
 ## Privacy
 

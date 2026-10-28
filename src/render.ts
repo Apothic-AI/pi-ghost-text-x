@@ -2,7 +2,18 @@
 import { CURSOR_MARKER, visibleWidth } from "@earendil-works/pi-tui";
 import { fitSuggestionToWidth } from "./normalize.ts";
 
-const SGR_RUN = /^(?:\x1b\[[0-9;:]*m)*/;
+/**
+ * One zero-width decoration: an SGR sequence or an APC string.
+ *
+ * pi-tui >=1.4 wraps the cell drawn as the hardware cursor in zero-width APC
+ * markers (`ESC _ pi:fc BEL` ... `ESC _ pi:/fc BEL`) and only resolves them to
+ * inverse video later, in `resolveFakeCursors()`. Older versions emitted that
+ * cursor as plain `ESC[7m ... ESC[0m`. Both spellings have to be skippable
+ * here, or the padding check below fails and the ghost is never drawn.
+ */
+const DECOR = String.raw`(?:\x1b\[[0-9;:]*m|\x1b_[^\x07]*\x07)`;
+const DECOR_RUN = new RegExp(`^${DECOR}*`);
+const PADDING = new RegExp(`^(${DECOR}*)( *)(${DECOR}*)$`);
 const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 /** True when the cursor sits after the last character of the last logical line. */
@@ -29,16 +40,17 @@ export function renderGhostText(
 	let pos = line.indexOf(CURSOR_MARKER) + CURSOR_MARKER.length;
 
 	// Skip the cursor cell as styling + one grapheme + styling, so any SGR
-	// reset spelling the theme uses to close the inverse-video cursor works.
-	pos += SGR_RUN.exec(line.slice(pos))![0].length;
+	// reset spelling the theme uses to close the inverse-video cursor works,
+	// and so do pi-tui's APC fake-cursor markers.
+	pos += DECOR_RUN.exec(line.slice(pos))![0].length;
 	const glyph = graphemes.segment(line.slice(pos))[Symbol.iterator]().next().value?.segment;
 	if (!glyph) return lines;
 	pos += glyph.length;
-	pos += SGR_RUN.exec(line.slice(pos))![0].length;
+	pos += DECOR_RUN.exec(line.slice(pos))![0].length;
 
 	// Only overwrite plain trailing padding; anything else after the cursor
 	// (a border, styled content) means the layout isn't what we expect.
-	const pad = /^((?:\x1b\[[0-9;:]*m)*)( *)((?:\x1b\[[0-9;:]*m)*)$/.exec(line.slice(pos));
+	const pad = PADDING.exec(line.slice(pos));
 	if (!pad) return lines;
 	const [, lead, spaces, trail] = pad;
 

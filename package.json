@@ -1,20 +1,20 @@
 {
-  "name": "pi-ghost-text",
+  "name": "pi-ghost-text-x",
   "version": "0.1.2",
   "description": "Ghost-text prompt suggestions (inline autocomplete + next-prompt) for the pi coding agent",
   "license": "MIT",
   "author": "Chris Vaughan",
   "type": "module",
   "engines": {
-    "node": ">=23.6"
+    "node": ">=22.18"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jcv/pi-ghost-text.git"
+    "url": "git+https://github.com/Apothic-AI/pi-ghost-text-x.git"
   },
-  "homepage": "https://github.com/jcv/pi-ghost-text#readme",
+  "homepage": "https://github.com/Apothic-AI/pi-ghost-text-x#readme",
   "bugs": {
-    "url": "https://github.com/jcv/pi-ghost-text/issues"
+    "url": "https://github.com/Apothic-AI/pi-ghost-text-x/issues"
   },
   "keywords": [
     "pi-package",
@@ -34,7 +34,7 @@
     "extensions": [
       "./src/index.ts"
     ],
-    "image": "https://raw.githubusercontent.com/jcv/pi-ghost-text/main/assets/social-preview.png"
+    "image": "https://raw.githubusercontent.com/Apothic-AI/pi-ghost-text-x/main/assets/social-preview.png"
   },
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",
@@ -43,5 +43,13 @@
   },
   "scripts": {
     "test": "node --test"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-agent-core": "^1.4.0",
+    "@earendil-works/pi-ai": "^1.4.0",
+    "@earendil-works/pi-coding-agent": "^1.4.0",
+    "@earendil-works/pi-tui": "^1.4.0",
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
   }
 }
