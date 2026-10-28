@@ -11,7 +11,16 @@
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 
 export const GENERATION_TIMEOUT_MS = 8_000;
-export const MAX_TOKENS = 150;
+/**
+ * Output cap per suggestion.
+ *
+ * 150 is enough for the one-line answer itself but not for a reasoning model,
+ * which spends the entire budget thinking and returns an empty text channel.
+ * Measured on nemotron-3-nano-30b-a3b: ~150-200 reasoning tokens before the
+ * first character, so anything under ~512 yields `content: null` and no ghost.
+ * Unused budget costs nothing, so the cap is set to leave room for both.
+ */
+export const MAX_TOKENS = 600;
 export const TEMPERATURE = 0.3;
 
 export const SYSTEM_PROMPT = `You complete prompts in an AI coding assistant's input box, like ghost-text autocomplete.

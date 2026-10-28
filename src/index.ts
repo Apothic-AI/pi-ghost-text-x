@@ -40,7 +40,9 @@ import {
 	clampMaxTokens,
 	clampTemperature,
 	isReasoningSetting,
+	MIN_REASONING_BUDGET,
 	REASONING_SETTINGS,
+	reasoningStarvedBudget,
 } from "./sampling.ts";
 import { scopedOrAvailable } from "./model-selection.ts";
 import { configureDebug } from "./debug.ts";
@@ -150,6 +152,15 @@ export default function (pi: ExtensionAPI): void {
 		config = readConfig(ctx.cwd);
 		configureDebug({ enabled: config.debug, logFile: defaultLogFile() });
 		if (ctx.mode !== "tui") return;
+		// A reasoning model spends the token budget thinking first. If the cap is
+		// reached inside that phase the response carries no text at all, and the
+		// ghost silently never appears -- say so instead of looking broken.
+		if (reasoningStarvedBudget(config.reasoning, config.maxTokens)) {
+			ctx.ui.notify(
+				`Prompt suggestions: reasoning="${config.reasoning}" with maxTokens=${config.maxTokens} leaves no room for text. Use /suggest-sampling to raise maxTokens (>= ${MIN_REASONING_BUDGET}) or set reasoning to "off".`,
+				"warning",
+			);
+		}
 		ctx.ui.setEditorComponent((tui, theme, keybindings) => {
 			editor = new SuggestingEditor(tui, theme, keybindings, ctx, () => config);
 			seedHistoryFromSession(editor, ctx);

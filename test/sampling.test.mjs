@@ -7,9 +7,11 @@ import {
 	MAX_MAX_TOKENS,
 	MAX_TEMPERATURE,
 	MIN_MAX_TOKENS,
+	MIN_REASONING_BUDGET,
 	MIN_TEMPERATURE,
 	REASONING_SETTINGS,
 	reasoningLevel,
+	reasoningStarvedBudget,
 } from "../src/sampling.ts";
 
 test("isReasoningSetting accepts every advertised level", () => {
@@ -63,4 +65,18 @@ test("clampTemperature keeps the fallback for non-numbers", () => {
 	for (const bad of ["0.5", "", null, undefined, {}, [], Number.NaN]) {
 		assert.equal(clampTemperature(bad, 0.3), 0.3, String(bad));
 	}
+});
+
+test("reasoningStarvedBudget flags a budget a reasoning model cannot answer within", () => {
+	// The failure this guards: the model spends the cap thinking, returns an
+	// empty text channel, and the ghost silently never appears.
+	assert.equal(reasoningStarvedBudget("low", 150), true);
+	assert.equal(reasoningStarvedBudget("low", MIN_REASONING_BUDGET - 1), true);
+	assert.equal(reasoningStarvedBudget("max", 150), true);
+});
+
+test("reasoningStarvedBudget is quiet when reasoning is off or the budget is ample", () => {
+	assert.equal(reasoningStarvedBudget("off", 150), false);
+	assert.equal(reasoningStarvedBudget("low", MIN_REASONING_BUDGET), false);
+	assert.equal(reasoningStarvedBudget("low", 600), false);
 });

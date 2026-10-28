@@ -61,3 +61,20 @@ export function reasoningLevel(
 ): Exclude<ReasoningSetting, "off"> | undefined {
 	return setting === "off" ? undefined : setting;
 }
+
+/**
+ * Token budget below which a reasoning model cannot produce any visible text.
+ *
+ * A reasoning model spends the budget thinking first; if the cap is reached
+ * inside that phase the response returns with an empty text channel, which
+ * looks exactly like "the extension isn't working".
+ */
+export const MIN_REASONING_BUDGET = 512;
+
+/** True when reasoning is enabled with too little budget left for actual text. */
+export function reasoningStarvedBudget(
+	setting: ReasoningSetting,
+	maxTokens: number,
+): boolean {
+	return setting !== "off" && maxTokens < MIN_REASONING_BUDGET;
+}
