@@ -24,13 +24,25 @@ import {
 	SYSTEM_PROMPT,
 	systemPromptFor,
 } from "./client.ts";
-import { extractSuggestion, isEligible, parseCandidates } from "./normalize.ts";
+import { extractSuggestion, isEligible, parseCandidates, rejectionReason } from "./normalize.ts";
 import { debug } from "./debug.ts";
 import { isCursorAtEnd, renderGhostText } from "./render.ts";
 import { reasoningLevel } from "./sampling.ts";
 
 const DEBOUNCE_MS = 700;
 const STATUS_KEY = "prompt-suggestions";
+
+/**
+ * Name the branch that rejected a response, so the debug log distinguishes
+ * "the model declined" from "the model ignored the typed prefix" from
+ * "it just repeated what was already typed".
+ */
+function describeRejections(raw: string[], text: string): string {
+	if (raw.length === 0) return "empty response";
+	const reasons = raw.map((candidate) => rejectionReason(candidate, text));
+	const snippet = (raw[0] ?? "").slice(0, 80);
+	return `${reasons.join(",")} | raw=${JSON.stringify(snippet)}`;
+}
 
 export class SuggestingEditor extends CustomEditor {
 	private ghost: string | null = null; // visible remainder shown dimmed
@@ -326,7 +338,7 @@ export class SuggestingEditor extends CustomEditor {
 		}
 
 		if (candidates.length === 0) {
-			debug("no-suggestion");
+			debug("no-suggestion", describeRejections(raw, text));
 			this.clearGhost();
 			return;
 		}

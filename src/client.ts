@@ -31,6 +31,7 @@ Rules:
 - If partial input is provided, your output MUST begin with that exact text, unchanged.
 - Match the length the request implies: usually a single line, but a short paragraph is fine when the user is clearly about to ask for something that needs the detail.
 - Be specific to the conversation. Prefer concrete next steps (run the tests, commit, fix the file just discussed) over generic requests.
+- Always carry the typed text forward with at least a few more words. Never return the typed text unchanged.
 - If there is no confident prediction, output exactly: NONE`;
 
 export type ResponseClass =
